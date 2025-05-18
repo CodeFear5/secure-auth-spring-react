@@ -199,16 +199,3 @@ For any questions or issues, please open an issue or contact [Nagesh B C / nages
 
 
 
-
-
-# Project Demo
-
-![Demo 1](https://raw.githubusercontent.com/CodeFear5/secure-auth-spring-react/main/assets/demo1.gif)
-
-
-## Demo 2
-![Demo 2](./assets/demo2.gif)
-
-
-## Demo 2
-![Demo 2](./assets/demo2.gif)
