@@ -1,5 +1,4 @@
 // services/api.js
-
 import axios from 'axios';
 
 const API = axios.create({
@@ -9,11 +8,11 @@ const API = axios.create({
   },
 });
 
-// Interceptor: attach token only if it's not a login request
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem('token');
 
-  if (!req.url.includes('/login') && token) {
+  // Skip token for login and register
+  if (!req.url.includes('/login') && !req.url.includes('/register') && token) {
     req.headers['Authorization'] = `Bearer ${token}`;
   }
 

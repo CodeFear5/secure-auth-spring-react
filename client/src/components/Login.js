@@ -1,82 +1,145 @@
-import React, { useState, useEffect } from 'react';
-import API from '../services/api';  // import your API helper
- const Dashboard = () => {
-  const [showToken, setShowToken] = useState(false);
-  const [userCount, setUserCount] = useState(null);
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import API from '../services/api';
+import { FiUser, FiLock, FiArrowRight } from 'react-icons/fi';
 
-  const token = localStorage.getItem('token');
+const LoginPage = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
- useEffect(() => {
-  const fetchUserCount = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
     try {
-      const res = await API.get('/users/count');
-      setUserCount(res.data);
-    } catch (error) {
-      console.error('Error fetching user count:', error);
-      setUserCount('N/A');
+      const response = await API.post('/login', { username, password });
+      const token = response.data;
+      console.log('Login response token:', token);
+
+      localStorage.setItem('token', token);
+      setLoading(false);
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid credentials');
+      setLoading(false);
     }
   };
 
-  fetchUserCount();
-}, []);
- 
-
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-lg">
-        <div className="p-6 text-xl font-bold text-green-600 border-b">Spring Dashboard</div>
-        <nav className="p-4">
-          <ul className="space-y-4 text-gray-700">
-            <li className="hover:text-green-600 cursor-pointer">Overview</li>
-            <li
-              className="hover:text-green-600 cursor-pointer"
-              onClick={() => setShowToken(!showToken)}
-              title="Click to toggle token"
+    <div className="min-h-screen flex items-center justify-center bg-[#f9fafb] px-4">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <div className="mx-auto w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mb-4">
+            <FiLock className="text-white w-8 h-8" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
+          <p className="mt-2 text-sm text-gray-600">Login to continue</p>
+        </div>
+
+        <div className="bg-white py-8 px-6 shadow-md rounded-lg">
+          {error && (
+            <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiUser className="text-gray-400" />
+                </div>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  className="block w-full pl-10 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiLock className="text-gray-400" />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  className="block w-full pl-10 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 disabled:bg-green-300"
+              >
+                {loading ? (
+                  <svg
+                    className="animate-spin h-5 w-5 mr-3 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8z"
+                    ></path>
+                  </svg>
+                ) : (
+                  <>
+                    Login
+                    <FiArrowRight className="ml-2" />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          <p className="mt-6 text-center text-gray-600">
+            Don't have an account?{' '}
+            <span
+              className="text-green-600 font-semibold cursor-pointer hover:underline"
+              onClick={() => navigate('/register')}
             >
-              Users (View Token)
-            </li>
-            <li className="hover:text-green-600 cursor-pointer">Reports</li>
-            <li className="hover:text-green-600 cursor-pointer">Settings</li>
-          </ul>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        <header className="mb-6 border-b pb-4 flex justify-between items-center">
-          <h1 className="text-3xl font-semibold text-gray-800">Welcome to the Dashboard</h1>
-          <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            Logout
-          </button>
-        </header>
-
-        {showToken && (
-          <div className="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded break-all">
-            <strong>Your Token:</strong>
-            <p>{token || 'No token found in localStorage'}</p>
-          </div>
-        )}
-
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded shadow-md">
-            <h2 className="text-xl font-semibold mb-2">Total Users</h2>
-            <p className="text-3xl text-green-600 font-bold">
-              {userCount !== null ? userCount : 'Loading...'}
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded shadow-md">
-            <h2 className="text-xl font-semibold mb-2">Active Sessions</h2>
-            <p className="text-3xl text-green-600 font-bold">87</p>
-          </div>
-          <div className="bg-white p-6 rounded shadow-md">
-            <h2 className="text-xl font-semibold mb-2">Server Status</h2>
-            <p className="text-lg text-gray-600">✅ All systems operational</p>
-          </div>
-        </section>
-      </main>
+              Sign Up
+            </span>
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default LoginPage;
